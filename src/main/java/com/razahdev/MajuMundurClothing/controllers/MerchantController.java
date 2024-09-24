@@ -24,17 +24,17 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping(path = ApiUrl.MERCHANT)
 @SecurityRequirement(name = "bearerAuth")
-@Tag(name = "Employee")
+@Tag(name = "Merchant")
 public class MerchantController {
     private final MerchantService merchantService;
 
     @Operation(
-            description = "Get all employee (ADMIN PRIVILEGE)",
-            summary = "Get all employee "
+            description = "Get all merchant (ADMIN PRIVILEGE)",
+            summary = "Get all merchant "
     )
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<CommonResponse<List<MerchantResponse>>> getAllEmployee() {
+    public ResponseEntity<CommonResponse<List<MerchantResponse>>> getAllmerchant() {
 
         List<MerchantResponse> allResponses = merchantService.getAllResponses();
         CommonResponse<List<MerchantResponse>> response = CommonResponse.<List<MerchantResponse>>builder()
@@ -46,29 +46,31 @@ public class MerchantController {
     }
 
     @Operation(
-            description = "Get specific employee (ADMIN PRIVILEGE)",
-            summary = "Get specific employee "
+            description = "Get specific merchant (ADMIN PRIVILEGE)",
+            summary = "Get specific merchant "
     )
+    
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     @GetMapping(
             path = ApiUrl.PATH_VAR_ID,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<CommonResponse<MerchantResponse>> getEmployeeById(@PathVariable String id) {
-        MerchantResponse employeeById = merchantService.getByIdResponse(id);
+    public ResponseEntity<CommonResponse<MerchantResponse>> getMerchantById(@PathVariable String id) {
+        MerchantResponse merchantById = merchantService.getByIdResponse(id);
         CommonResponse<MerchantResponse> response = CommonResponse.<MerchantResponse>builder()
                 .statusCode(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(employeeById)
+                .data(merchantById)
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @Operation(
-            description = "Update employee information (ADMIN PRIVILEGE)",
-            summary = "Update employee information"
+            description = "Update merchant information (ADMIN PRIVILEGE)",
+            summary = "Update merchant information"
     )
-    @PreAuthorize("hasRole('ADMINISTRATOR')")
+    
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','MERCHANT')")
     @PutMapping(
             produces = MediaType.APPLICATION_JSON_VALUE,
             consumes = MediaType.APPLICATION_JSON_VALUE
@@ -84,19 +86,19 @@ public class MerchantController {
     }
 
     @Operation(
-            description = "Delete specific employee (ADMIN PRIVILEGE)",
-            summary = "Delete specific employee"
+            description = "Delete specific merchant (ADMIN PRIVILEGE)",
+            summary = "Delete specific merchant"
     )
     @PreAuthorize("hasRole('ADMINISTRATOR')")
     @DeleteMapping(
             path =ApiUrl.DELETE_ACCOUNT + ApiUrl.PATH_VAR_ID,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<CommonResponse<String>> deleteEmployeeById(@PathVariable String id) {
+    public ResponseEntity<CommonResponse<String>> deleteMerchantById(@PathVariable String id) {
         merchantService.deleteById(id);
         CommonResponse<String> response = CommonResponse.<String>builder()
                 .statusCode(HttpStatus.OK.value())
-                .message("Removed user with id: " + id)
+                .message("Removed Merchant with id: " + id)
                 .build();
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

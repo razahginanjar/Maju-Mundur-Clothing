@@ -22,16 +22,15 @@ import java.time.Instant;
 import java.util.Objects;
 
 @Service
-///@RequiredArgsConstructor
 @Slf4j
 public class JwtServiceImpl implements JwtService {
     private final String JWT_SECRET;
     private final String JWT_ISSUE;
     private final Long JWT_EXPIRED_AT;
 
-    public JwtServiceImpl(@Value(value = "${toko_tiktak.jwt.secret-key}") String JWT_SECRET,
-                          @Value(value = "${toko_tiktak.jwt.issue}") String JWT_ISSUE,
-                          @Value(value = "${toko_tiktak.jwt.expiredatmiliseconds}") Long JWT_EXPIRED_AT) {
+    public JwtServiceImpl(@Value(value = "${maju_mundur.jwt.secret_key}") String JWT_SECRET,
+                          @Value(value = "${maju_mundur.jwt.issuer}") String JWT_ISSUE,
+                          @Value(value = "${maju_mundur.jwt.expirationInSecond}") Long JWT_EXPIRED_AT) {
         this.JWT_SECRET = JWT_SECRET;
         this.JWT_ISSUE = JWT_ISSUE;
         this.JWT_EXPIRED_AT = JWT_EXPIRED_AT;

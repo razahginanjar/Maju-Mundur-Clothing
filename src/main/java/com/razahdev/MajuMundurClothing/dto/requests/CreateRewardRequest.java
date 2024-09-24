@@ -13,7 +13,6 @@ public class CreateRewardRequest {
     @NotBlank
     @NotNull
     private String rewardName;
-    @NotBlank
     @NotNull
     private Integer points;
 }

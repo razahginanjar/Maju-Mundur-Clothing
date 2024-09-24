@@ -43,9 +43,9 @@ public class AuthServiceImpl implements AuthService {
     private final RewardService rewardService;
     private final CustomerServiceImpl customerServiceImpl;
 
-    @Value("${challengebookingroom.superadmin.username}")
+    @Value("${maju_mundur.superadmin.username}")
     private String superAdminUsername;
-    @Value("${challengebookingroom.superadmin.password}")
+    @Value("${maju_mundur.superadmin.password}")
     private String superAdminPassword;
 
     @PostConstruct
