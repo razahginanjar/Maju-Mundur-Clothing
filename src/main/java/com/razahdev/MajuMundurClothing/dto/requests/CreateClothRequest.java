@@ -1,6 +1,7 @@
 package com.razahdev.MajuMundurClothing.dto.requests;
 
-import jakarta.persistence.Column;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -8,8 +9,10 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ClothRequest {
-    private String id;
+public class CreateClothRequest {
+    @NotBlank
+    @NotNull
     private String name;
+    @NotNull
     private Long price;
 }

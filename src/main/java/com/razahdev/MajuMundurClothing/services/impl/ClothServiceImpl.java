@@ -1,6 +1,7 @@
 package com.razahdev.MajuMundurClothing.services.impl;
 
-import com.razahdev.MajuMundurClothing.dto.requests.ClothRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.CreateClothRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.UpdateClothRequest;
 import com.razahdev.MajuMundurClothing.dto.responses.ClothResponse;
 import com.razahdev.MajuMundurClothing.entities.Cloth;
 import com.razahdev.MajuMundurClothing.entities.ClothPrice;
@@ -9,7 +10,6 @@ import com.razahdev.MajuMundurClothing.repository.ClothRepository;
 import com.razahdev.MajuMundurClothing.services.ClothPriceService;
 import com.razahdev.MajuMundurClothing.services.ClothService;
 import com.razahdev.MajuMundurClothing.utils.ValidationUtils;
-import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -27,7 +27,7 @@ public class ClothServiceImpl implements ClothService {
     private final ClothMapper clothMapper;
 
     @Override
-    public Cloth create(ClothRequest request) {
+    public Cloth create(CreateClothRequest request) {
         validationUtils.validate(request);
         ClothPrice clothPrice = clothPriceService.create(request.getPrice());
         if(clothRepository.existsByName(request.getName()))
@@ -44,7 +44,7 @@ public class ClothServiceImpl implements ClothService {
     }
 
     @Override
-    public Cloth update(ClothRequest request) {
+    public Cloth update(UpdateClothRequest request) {
         validationUtils.validate(request);
         Cloth cloth = getById(request.getId());
         ClothPrice clothPrice = clothPriceService.create(request.getPrice());
@@ -90,14 +90,14 @@ public class ClothServiceImpl implements ClothService {
     }
 
     @Override
-    public ClothResponse createResponse(ClothRequest request) {
+    public ClothResponse createResponse(CreateClothRequest request) {
         validationUtils.validate(request);
         Cloth cloth = create(request);
         return clothMapper.map(cloth);
     }
 
     @Override
-    public ClothResponse updateResponse(ClothRequest request) {
+    public ClothResponse updateResponse(UpdateClothRequest request) {
         validationUtils.validate(request);
         Cloth update = update(request);
         return clothMapper.map(update);

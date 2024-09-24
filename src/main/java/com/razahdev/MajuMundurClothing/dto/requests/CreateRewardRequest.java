@@ -1,5 +1,7 @@
 package com.razahdev.MajuMundurClothing.dto.requests;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -7,8 +9,11 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class RewardRequest {
-    private String id;
+public class CreateRewardRequest {
+    @NotBlank
+    @NotNull
     private String rewardName;
+    @NotBlank
+    @NotNull
     private Integer points;
 }

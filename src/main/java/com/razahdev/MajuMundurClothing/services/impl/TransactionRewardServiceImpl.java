@@ -1,14 +1,10 @@
 package com.razahdev.MajuMundurClothing.services.impl;
 
-import com.razahdev.MajuMundurClothing.dto.requests.CustomerRequest;
-import com.razahdev.MajuMundurClothing.dto.requests.RewardRequest;
-import com.razahdev.MajuMundurClothing.dto.requests.TransactionRewardRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.*;
 import com.razahdev.MajuMundurClothing.dto.responses.TransactionRewardResponse;
 import com.razahdev.MajuMundurClothing.entities.Customer;
 import com.razahdev.MajuMundurClothing.entities.Reward;
 import com.razahdev.MajuMundurClothing.entities.TransactionReward;
-import com.razahdev.MajuMundurClothing.entities.Users;
-import com.razahdev.MajuMundurClothing.mapper.impl.TransactionMapperImpl;
 import com.razahdev.MajuMundurClothing.mapper.impl.TransactionRewardMapperImpl;
 import com.razahdev.MajuMundurClothing.repository.TransactionRewardRepository;
 import com.razahdev.MajuMundurClothing.services.CustomerService;
@@ -32,14 +28,15 @@ public class TransactionRewardServiceImpl implements TransactionRewardService {
     private final RewardService rewardService;
     private final ValidationUtils validationUtils;
     private final TransactionRewardMapperImpl transactionRewardMapperImpl;
+    private final UsersServiceImpl usersServiceImpl;
 
 
     @Override
-    public TransactionReward create(TransactionRewardRequest request) {
+    public TransactionReward create(CreateTransactionRewardRequest request) {
         validationUtils.validate(request);
         Customer byUser = customerService.getByUser();
-        RewardRequest rewardRequest = RewardRequest.builder().rewardName(request.getRewardName()).build();
-        Reward reward = rewardService.create(rewardRequest);
+        CreateRewardRequest createRewardRequest = CreateRewardRequest.builder().rewardName(request.getRewardName()).build();
+        Reward reward = rewardService.create(createRewardRequest);
 
         if(reward.getRequiredPoints() > byUser.getPoints())
         {
@@ -51,19 +48,20 @@ public class TransactionRewardServiceImpl implements TransactionRewardService {
         transactionReward.setCustomer(byUser);
         transactionReward.setTransactionDate(LocalDateTime.now());
 
-        CustomerRequest customerRequest = CustomerRequest.builder()
-                .id(byUser.getId())
-                .points(byUser.getPoints() - reward.getRequiredPoints())
-                .build();
-        customerService.updatePoints(customerRequest);
+        UpdatePointsCustomerRequest build = UpdatePointsCustomerRequest.builder().points(byUser.getPoints() - reward.getRequiredPoints()).build();
+        customerService.updatePoints(build);
         return transactionRewardRepository.saveAndFlush(transactionReward);
     }
 
     @Override
-    public TransactionReward update(TransactionRewardRequest request) {
+    public TransactionReward update(UpdateTransactionRewardRequest request) {
         validationUtils.validate(request);
         TransactionReward byId = getById(request.getId());
-        byId.setReward(rewardService.create(RewardRequest.builder().rewardName(request.getRewardName()).build()));
+        if(!byId.getCustomer().getUsersCustomer().getUserId().equals(usersServiceImpl.getByContext().getUserId()))
+        {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, HttpStatus.FORBIDDEN.getReasonPhrase());
+        }
+        byId.setReward(rewardService.create(CreateRewardRequest.builder().rewardName(request.getRewardName()).build()));
         return transactionRewardRepository.saveAndFlush(byId);
     }
 
@@ -85,13 +83,13 @@ public class TransactionRewardServiceImpl implements TransactionRewardService {
     }
 
     @Override
-    public TransactionRewardResponse createResponse(TransactionRewardRequest request) {
+    public TransactionRewardResponse createResponse(CreateTransactionRewardRequest request) {
         TransactionReward transactionReward = create(request);
         return transactionRewardMapperImpl.map(transactionReward);
     }
 
     @Override
-    public TransactionRewardResponse updateResponse(TransactionRewardRequest request) {
+    public TransactionRewardResponse updateResponse(UpdateTransactionRewardRequest request) {
         TransactionReward update = update(request);
         return transactionRewardMapperImpl.map(update);
     }

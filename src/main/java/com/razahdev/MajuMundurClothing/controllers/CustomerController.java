@@ -1,6 +1,10 @@
 package com.razahdev.MajuMundurClothing.controllers;
 
 import com.razahdev.MajuMundurClothing.constants.ApiUrl;
+import com.razahdev.MajuMundurClothing.dto.requests.CreateCustomerRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.UpdateCustomerRequest;
+import com.razahdev.MajuMundurClothing.dto.responses.CommonResponse;
+import com.razahdev.MajuMundurClothing.dto.responses.CustomerResponse;
 import com.razahdev.MajuMundurClothing.services.impl.CustomerServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,25 +22,25 @@ public class CustomerController {
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN')")
     @GetMapping(path = ApiUrl.PATH_VAR_ID)
-    public ResponseEntity<GenericResponse<CustomerResponse>>  getCustomerById(@PathVariable String id) {
+    public ResponseEntity<CommonResponse<CustomerResponse>>  getCustomerById(@PathVariable String id) {
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(
-                        GenericResponse.<CustomerResponse>builder()
-                                .data(customerServiceImpl.getById(id))
+                        CommonResponse.<CustomerResponse>builder()
+                                .data(customerServiceImpl.getByIdResponse(id))
                                 .message("Successfully get Customer")
-                                .status(HttpStatus.ACCEPTED.value())
+                                .statusCode(HttpStatus.ACCEPTED.value())
                                 .build()
                 );
     }
 
     @GetMapping(path = ApiUrl.PATH_VAR_ID)
-    public ResponseEntity<GenericResponse<CustomerResponse>> seeYourOwnAccount(@PathVariable String id) {
+    public ResponseEntity<CommonResponse<CustomerResponse>> seeYourOwnAccount(@PathVariable String id) {
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(
-                        GenericResponse.<CustomerResponse>builder()
-                                .data(customerServiceImpl.getById(id))
+                        CommonResponse.<CustomerResponse>builder()
+                                .data(customerServiceImpl.getByUserResponse())
                                 .message("Successfully get Customer")
-                                .status(HttpStatus.ACCEPTED.value())
+                                .statusCode(HttpStatus.ACCEPTED.value())
                                 .build()
                 );
     }
@@ -44,37 +48,37 @@ public class CustomerController {
 
     @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN')")
     @GetMapping
-    public ResponseEntity<GenericResponse<List<CustomerResponse>>> getAllCustomer() {
+    public ResponseEntity<CommonResponse<List<CustomerResponse>>> getAllCustomer() {
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(
-                        GenericResponse.<List<CustomerResponse>>builder()
-                                .status(HttpStatus.ACCEPTED.value())
+                        CommonResponse.<List<CustomerResponse>>builder()
+                                .statusCode(HttpStatus.ACCEPTED.value())
                                 .message("Successfully get all Customer")
-                                .data(customerServiceImpl.getAll())
+                                .data(customerServiceImpl.getAllResponses())
                                 .build()
                 );
     }
 
     @PutMapping
-    public ResponseEntity<GenericResponse<CustomerResponse>>  updateCustomer(@RequestBody UpdateCustomerRequest customer) {
+    public ResponseEntity<CommonResponse<CustomerResponse>>  updateCustomer(@RequestBody UpdateCustomerRequest customer) {
         return ResponseEntity.status(HttpStatus.ACCEPTED)
                 .body(
-                        GenericResponse.<CustomerResponse>builder()
-                                .data(customerServiceImpl.update(customer))
+                        CommonResponse.<CustomerResponse>builder()
+                                .data(customerServiceImpl.updateResponse(customer))
                                 .message("Successfully updated product")
-                                .status(HttpStatus.ACCEPTED.value())
+                                .statusCode(HttpStatus.ACCEPTED.value())
                                 .build()
                 );
     }
 
     @DeleteMapping(path = ApiUrl.PATH_VAR_ID)
-    public ResponseEntity<GenericResponse<String>>  deleteCustomerById(@PathVariable String id) {
+    public ResponseEntity<CommonResponse<String>>  deleteCustomerById(@PathVariable String id) {
         customerServiceImpl.deleteById(id);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(
-                        GenericResponse.<String>builder()
+                        CommonResponse.<String>builder()
                                 .data(ConstantMessage.DELETESUCCESS + id)
-                                .status(HttpStatus.OK.value())
+                                .statusCode(HttpStatus.OK.value())
                                 .message("Successfully deleted customer")
                                 .build()
                 );

@@ -1,6 +1,7 @@
 package com.razahdev.MajuMundurClothing.services.impl;
 
-import com.razahdev.MajuMundurClothing.dto.requests.RewardRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.CreateRewardRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.UpdateRewardRequest;
 import com.razahdev.MajuMundurClothing.dto.responses.RewardResponse;
 import com.razahdev.MajuMundurClothing.entities.Reward;
 import com.razahdev.MajuMundurClothing.mapper.impl.RewardMapperImpl;
@@ -23,7 +24,7 @@ public class RewardServiceImpl implements RewardService {
     private final RewardMapperImpl rewardMapperImpl;
 
     @Override
-    public Reward create(RewardRequest request) {
+    public Reward create(CreateRewardRequest request) {
         validationUtils.validate(request);
         return rewardRepository.findByRewardName(request.getRewardName()).orElseGet(
                 () -> rewardRepository.saveAndFlush(
@@ -36,7 +37,7 @@ public class RewardServiceImpl implements RewardService {
     }
 
     @Override
-    public Reward update(RewardRequest request) {
+    public Reward update(UpdateRewardRequest request) {
         validationUtils.validate(request);
         Reward byId = getById(request.getId());
         byId.setRewardName(request.getRewardName());
@@ -68,13 +69,13 @@ public class RewardServiceImpl implements RewardService {
     }
 
     @Override
-    public RewardResponse createResponse(RewardRequest request) {
+    public RewardResponse createResponse(CreateRewardRequest request) {
         Reward reward = create(request);
         return rewardMapperImpl.map(reward);
     }
 
     @Override
-    public RewardResponse updateResponse(RewardRequest request) {
+    public RewardResponse updateResponse(UpdateRewardRequest request) {
         Reward update = update(request);
         return rewardMapperImpl.map(update);
     }

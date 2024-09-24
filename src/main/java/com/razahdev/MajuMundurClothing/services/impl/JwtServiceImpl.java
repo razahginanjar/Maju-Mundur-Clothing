@@ -28,15 +28,13 @@ public class JwtServiceImpl implements JwtService {
     private final String JWT_SECRET;
     private final String JWT_ISSUE;
     private final Long JWT_EXPIRED_AT;
-    private final UsersRepository userAccountRepository;
 
     public JwtServiceImpl(@Value(value = "${toko_tiktak.jwt.secret-key}") String JWT_SECRET,
                           @Value(value = "${toko_tiktak.jwt.issue}") String JWT_ISSUE,
-                          @Value(value = "${toko_tiktak.jwt.expiredatmiliseconds}") Long JWT_EXPIRED_AT, UsersRepository userAccountRepository) {
+                          @Value(value = "${toko_tiktak.jwt.expiredatmiliseconds}") Long JWT_EXPIRED_AT) {
         this.JWT_SECRET = JWT_SECRET;
         this.JWT_ISSUE = JWT_ISSUE;
         this.JWT_EXPIRED_AT = JWT_EXPIRED_AT;
-        this.userAccountRepository = userAccountRepository;
     }
 
     public String generateToken(Users userAccount) {

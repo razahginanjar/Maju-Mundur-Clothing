@@ -1,5 +1,7 @@
 package com.razahdev.MajuMundurClothing.dto.requests;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -7,9 +9,11 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class MerchantRequest {
-    private String id;
+public class CreateCustomerRequest {
+    @NotBlank
+    @NotNull
     private String name;
-    private String phoneNumber;
+    @NotBlank
+    @NotNull
     private String email;
 }

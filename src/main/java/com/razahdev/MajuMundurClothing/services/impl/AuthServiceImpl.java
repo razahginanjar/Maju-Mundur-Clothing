@@ -2,22 +2,17 @@ package com.razahdev.MajuMundurClothing.services.impl;
 
 
 import com.razahdev.MajuMundurClothing.constants.ConstantRole;
-import com.razahdev.MajuMundurClothing.dto.requests.CustomerRequest;
-import com.razahdev.MajuMundurClothing.dto.requests.LoginRequest;
-import com.razahdev.MajuMundurClothing.dto.requests.MerchantRequest;
-import com.razahdev.MajuMundurClothing.dto.requests.RegisterRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.*;
+import com.razahdev.MajuMundurClothing.dto.responses.CustomerResponse;
 import com.razahdev.MajuMundurClothing.dto.responses.LoginResponse;
+import com.razahdev.MajuMundurClothing.dto.responses.MerchantResponse;
 import com.razahdev.MajuMundurClothing.dto.responses.RegisterResponse;
 import com.razahdev.MajuMundurClothing.entities.Customer;
 import com.razahdev.MajuMundurClothing.entities.Merchant;
 import com.razahdev.MajuMundurClothing.entities.Users;
 import com.razahdev.MajuMundurClothing.entities.UsersRoles;
 import com.razahdev.MajuMundurClothing.repository.UsersRepository;
-import com.razahdev.MajuMundurClothing.repository.UsersRoleRepository;
-import com.razahdev.MajuMundurClothing.services.AuthService;
-import com.razahdev.MajuMundurClothing.services.JwtService;
-import com.razahdev.MajuMundurClothing.services.MerchantService;
-import com.razahdev.MajuMundurClothing.services.UsersRoleService;
+import com.razahdev.MajuMundurClothing.services.*;
 import com.razahdev.MajuMundurClothing.utils.ValidationUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +40,7 @@ public class AuthServiceImpl implements AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final ValidationUtils validation;
+    private final RewardService rewardService;
     private final CustomerServiceImpl customerServiceImpl;
 
     @Value("${challengebookingroom.superadmin.username}")
@@ -68,6 +64,8 @@ public class AuthServiceImpl implements AuthService {
                 .usersRoles(List.of(admin, merchant, customer))
                 .build();
         userRepository.save(account);
+        rewardService.create(CreateRewardRequest.builder().rewardName("REWARD A").points(20).build());
+        rewardService.create(CreateRewardRequest.builder().rewardName("REWARD B").points(40).build());
     }
 
     @Override
@@ -101,17 +99,17 @@ public class AuthServiceImpl implements AuthService {
                 .build();
         userRepository.saveAndFlush(user);
 
-        MerchantRequest merchantRequest = MerchantRequest.builder()
+        CreateMerchantRequest createMerchantRequest = CreateMerchantRequest.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .phoneNumber(request.getPhoneNumber())
                 .build();
-        Merchant merchant1 = merchantService.createMerchant(merchantRequest, user);
+        MerchantResponse merchant1 = merchantService.createMerchantResponse(createMerchantRequest, user);
 
         return RegisterResponse.builder()
                 .username(user.getUsername())
                 .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
-                .merchant(employeeResponse)
+                .merchant(merchant1)
                 .build();
     }
 
@@ -127,17 +125,16 @@ public class AuthServiceImpl implements AuthService {
                 .build();
         userRepository.saveAndFlush(user);
 
-        CustomerRequest customerRequest = CustomerRequest.builder()
+        CreateCustomerRequest createCustomerRequest = CreateCustomerRequest.builder()
                 .name(request.getName())
-                .points(0)
                 .email(request.getEmail())
                 .build();
-        Customer customer1 = customerServiceImpl.createCustomer(customerRequest, user);
+        CustomerResponse customerResponse = customerServiceImpl.createCustomerResponse(createCustomerRequest, user);
 
         return RegisterResponse.builder()
                 .username(user.getUsername())
                 .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
-                .customer(employeeResponse)
+                .customer(customerResponse)
                 .build();
     }
 }

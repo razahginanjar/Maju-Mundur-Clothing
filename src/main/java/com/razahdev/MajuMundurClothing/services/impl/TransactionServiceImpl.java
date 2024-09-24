@@ -1,7 +1,9 @@
 package com.razahdev.MajuMundurClothing.services.impl;
 
-import com.razahdev.MajuMundurClothing.dto.requests.CustomerRequest;
-import com.razahdev.MajuMundurClothing.dto.requests.TransactionRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.CreateCustomerRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.CreateTransactionRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.UpdatePointsCustomerRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.UpdateTransactionRequest;
 import com.razahdev.MajuMundurClothing.dto.responses.TransactionResponse;
 import com.razahdev.MajuMundurClothing.entities.Cloth;
 import com.razahdev.MajuMundurClothing.entities.Customer;
@@ -28,9 +30,10 @@ public class TransactionServiceImpl implements TransactionService {
     private final ClothServiceImpl clothService;
     private final ValidationUtils validationUtils;
     private final TransactionMapperImpl transactionMapperImpl;
+    private final UsersServiceImpl usersServiceImpl;
 
     @Override
-    public Transaction create(TransactionRequest request) {
+    public Transaction create(CreateTransactionRequest request) {
         validationUtils.validate(request);
         Transaction transaction = new Transaction();
         transaction.setTransactionDate(LocalDateTime.now());
@@ -40,17 +43,20 @@ public class TransactionServiceImpl implements TransactionService {
 
         Customer customer = customerService.getByUser();
         transaction.setCustomer(customer);
-
-        CustomerRequest customerRequest = CustomerRequest.builder().points(customer.getPoints() + 20).id(customer.getId()).build();
-        customerService.updatePoints(customerRequest);
+        UpdatePointsCustomerRequest build = UpdatePointsCustomerRequest.builder().points(customer.getPoints() + 20).build();
+        customerService.updatePoints(build);
 
         return transactionRepository.saveAndFlush(transaction);
     }
 
     @Override
-    public Transaction update(TransactionRequest request) {
+    public Transaction update(UpdateTransactionRequest request) {
         validationUtils.validate(request);
         Transaction byId = getById(request.getBillId());
+        if(!byId.getCustomer().getUsersCustomer().getUserId().equals(usersServiceImpl.getByContext().getUserId()))
+        {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, HttpStatus.FORBIDDEN.getReasonPhrase());
+        }
         byId.setCloth(clothService.getById(request.getIdCloth()));
         return transactionRepository.saveAndFlush(byId);
     }
@@ -79,13 +85,13 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public TransactionResponse createResponse(TransactionRequest request) {
+    public TransactionResponse createResponse(CreateTransactionRequest request) {
         Transaction transaction = create(request);
         return transactionMapperImpl.map(transaction);
     }
 
     @Override
-    public TransactionResponse updateResponse(TransactionRequest request) {
+    public TransactionResponse updateResponse(UpdateTransactionRequest request) {
         Transaction update = update(request);
         return transactionMapperImpl.map(update);
     }
