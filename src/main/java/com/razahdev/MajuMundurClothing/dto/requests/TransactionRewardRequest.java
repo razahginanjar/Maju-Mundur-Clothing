@@ -8,4 +8,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransactionRewardRequest {
+    private String id;
+    private String rewardName;
 }

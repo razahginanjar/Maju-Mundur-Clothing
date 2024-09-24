@@ -10,7 +10,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class MerchantResponse {
-    private String employeeId;
-    private String employeeName;
-    private String department;
+    private String merchantId;
+    private String merchantName;
+    private String merchantEmail;
+    private String merchantPhone;
 }

@@ -2,9 +2,11 @@ package com.razahdev.MajuMundurClothing.services.impl;
 
 import com.razahdev.MajuMundurClothing.constants.ConstantRole;
 import com.razahdev.MajuMundurClothing.dto.requests.CustomerRequest;
+import com.razahdev.MajuMundurClothing.dto.responses.CustomerResponse;
 import com.razahdev.MajuMundurClothing.entities.Customer;
 import com.razahdev.MajuMundurClothing.entities.Users;
 import com.razahdev.MajuMundurClothing.entities.UsersRoles;
+import com.razahdev.MajuMundurClothing.mapper.impl.CustomerMapperImpl;
 import com.razahdev.MajuMundurClothing.repository.CustomerRepository;
 import com.razahdev.MajuMundurClothing.services.CustomerService;
 import com.razahdev.MajuMundurClothing.services.UserService;
@@ -23,6 +25,18 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final UserService userService;
     private final ValidationUtils validationUtils;
+    private final CustomerMapperImpl customerMapperImpl;
+
+    @Override
+    public Customer createCustomer(CustomerRequest customerRequest, Users users) {
+        validationUtils.validate(customerRequest);
+        Customer customer = new Customer();
+        customer.setName(customerRequest.getName());
+        customer.setEmail(customerRequest.getEmail());
+        customer.setPoints(customerRequest.getPoints());
+        customer.setUsersCustomer(users);
+        return customerRepository.saveAndFlush(customer);
+    }
 
     @Override
     public Customer update(CustomerRequest request) {
@@ -82,7 +96,32 @@ public class CustomerServiceImpl implements CustomerService {
     public void deleteById(String id) {
         Customer byId = getById(id);
         Users usersCustomer = byId.getUsersCustomer();
-        userService.deleteUserByID(usersCustomer.getUserId());
         customerRepository.delete(byId);
+        userService.deleteUserByID(usersCustomer.getUserId());
+    }
+
+    @Override
+    public CustomerResponse createCustomerResponse(CustomerRequest customerRequest, Users users) {
+        Customer customer = createCustomer(customerRequest, users);
+        return customerMapperImpl.map(customer);
+    }
+
+    @Override
+    public CustomerResponse updateResponse(CustomerRequest request) {
+        Customer update = update(request);
+        return customerMapperImpl.map(update);
+    }
+
+    @Override
+    public CustomerResponse getByIdResponse(String id) {
+        Customer byId = getById(id);
+        return customerMapperImpl.map(byId);
+    }
+
+    @Override
+    public List<CustomerResponse> getAllResponses() {
+        return getAll().stream().map(
+                customerMapperImpl::map
+        ).toList();
     }
 }

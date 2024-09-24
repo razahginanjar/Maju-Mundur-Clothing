@@ -1,7 +1,9 @@
 package com.razahdev.MajuMundurClothing.services.impl;
 
 import com.razahdev.MajuMundurClothing.dto.requests.RewardRequest;
+import com.razahdev.MajuMundurClothing.dto.responses.RewardResponse;
 import com.razahdev.MajuMundurClothing.entities.Reward;
+import com.razahdev.MajuMundurClothing.mapper.impl.RewardMapperImpl;
 import com.razahdev.MajuMundurClothing.repository.RewardRepository;
 import com.razahdev.MajuMundurClothing.services.RewardService;
 import com.razahdev.MajuMundurClothing.utils.ValidationUtils;
@@ -18,6 +20,7 @@ import java.util.Objects;
 public class RewardServiceImpl implements RewardService {
     private final RewardRepository rewardRepository;
     private final ValidationUtils validationUtils;
+    private final RewardMapperImpl rewardMapperImpl;
 
     @Override
     public Reward create(RewardRequest request) {
@@ -62,5 +65,30 @@ public class RewardServiceImpl implements RewardService {
     public void deleteById(String id) {
         Reward byId = getById(id);
         rewardRepository.delete(byId);
+    }
+
+    @Override
+    public RewardResponse createResponse(RewardRequest request) {
+        Reward reward = create(request);
+        return rewardMapperImpl.map(reward);
+    }
+
+    @Override
+    public RewardResponse updateResponse(RewardRequest request) {
+        Reward update = update(request);
+        return rewardMapperImpl.map(update);
+    }
+
+    @Override
+    public List<RewardResponse> getAllResponses() {
+        return getAll().stream().map(
+                rewardMapperImpl::map
+        ).toList();
+    }
+
+    @Override
+    public RewardResponse getByIdResponse(String id) {
+        Reward byId = getById(id);
+        return rewardMapperImpl.map(byId);
     }
 }

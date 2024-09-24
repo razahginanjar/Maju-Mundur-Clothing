@@ -1,16 +1,23 @@
 package com.razahdev.MajuMundurClothing.services.impl;
 
 
+import com.razahdev.MajuMundurClothing.constants.ConstantRole;
+import com.razahdev.MajuMundurClothing.dto.requests.CustomerRequest;
 import com.razahdev.MajuMundurClothing.dto.requests.LoginRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.MerchantRequest;
 import com.razahdev.MajuMundurClothing.dto.requests.RegisterRequest;
 import com.razahdev.MajuMundurClothing.dto.responses.LoginResponse;
 import com.razahdev.MajuMundurClothing.dto.responses.RegisterResponse;
+import com.razahdev.MajuMundurClothing.entities.Customer;
+import com.razahdev.MajuMundurClothing.entities.Merchant;
 import com.razahdev.MajuMundurClothing.entities.Users;
+import com.razahdev.MajuMundurClothing.entities.UsersRoles;
 import com.razahdev.MajuMundurClothing.repository.UsersRepository;
 import com.razahdev.MajuMundurClothing.repository.UsersRoleRepository;
 import com.razahdev.MajuMundurClothing.services.AuthService;
 import com.razahdev.MajuMundurClothing.services.JwtService;
 import com.razahdev.MajuMundurClothing.services.MerchantService;
+import com.razahdev.MajuMundurClothing.services.UsersRoleService;
 import com.razahdev.MajuMundurClothing.utils.ValidationUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -32,12 +39,13 @@ import java.util.Optional;
 public class AuthServiceImpl implements AuthService {
     private final UsersRepository userRepository;
 
-    private final UsersRoleRepository roleService;
+    private final UsersRoleService roleService;
     private final PasswordEncoder passwordEncoder;
-    private final MerchantService employeeService;
+    private final MerchantService merchantService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final ValidationUtils validation;
+    private final CustomerServiceImpl customerServiceImpl;
 
     @Value("${challengebookingroom.superadmin.username}")
     private String superAdminUsername;
@@ -50,51 +58,16 @@ public class AuthServiceImpl implements AuthService {
         Optional<Users> userSuperAdmin = userRepository.findByUsername(superAdminUsername);
         if (userSuperAdmin.isPresent()) return;
 
-        Role admin = roleService.create(RoleRequest.builder().constantRole(ConstantRole.ROLE_ADMINISTRATOR).build());
-        Role ga = roleService.create(RoleRequest.builder().constantRole(ConstantRole.ROLE_GENERAL_AFFAIR).build());
-        Role user = roleService.create(RoleRequest.builder().constantRole(ConstantRole.ROLE_USER).build());
+        UsersRoles admin = roleService.getOrSave(ConstantRole.ROLE_ADMINISTRATOR);
+        UsersRoles merchant = roleService.getOrSave(ConstantRole.ROLE_MERCHANT);
+        UsersRoles customer = roleService.getOrSave(ConstantRole.ROLE_CUSTOMER);
 
-        User account = User.builder()
+        Users account = Users.builder()
                 .username(superAdminUsername)
                 .password(passwordEncoder.encode(superAdminPassword))
-                .roles(List.of(admin, ga, user))
+                .usersRoles(List.of(admin, merchant, customer))
                 .build();
         userRepository.save(account);
-    }
-
-    @Override
-    public RegisterResponse register(RegisterRequest request) {
-        validation.validate(request);
-        Role role = roleService.getOrSave(ConstantRole.ROLE_USER);
-        String hashPassword = passwordEncoder.encode(request.getPassword());
-
-        EmployeeRequest employee = EmployeeRequest.builder()
-                .employeeName(request.getEmployeeName())
-                .department(request.getDepartment())
-                .phoneNumber(request.getPhoneNumber())
-                .corporateEmail(request.getCorporateEmail())
-                .build();
-        Employee response = employeeService.createAndGet(employee);
-
-        EmployeeResponse employeeResponse = EmployeeResponse.builder()
-                .employeeId(response.getEmployeeId())
-                .employeeName(employee.getEmployeeName())
-                .department(employee.getDepartment())
-                .build();
-
-        User user = User.builder()
-                .username(request.getUsername())
-                .employee(response)
-                .password(hashPassword)
-                .roles(List.of(role))
-                .build();
-        userRepository.saveAndFlush(user);
-
-        return RegisterResponse.builder()
-                .username(user.getUsername())
-                .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
-                .employee(employeeResponse)
-                .build();
     }
 
     @Override
@@ -116,12 +89,55 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public RegisterResponse registerEmployee(RegisterRequest request) {
-        return null;
+    public RegisterResponse registerMerchant(RegisterRequest request) {
+        validation.validate(request);
+        UsersRoles merchant = roleService.getOrSave(ConstantRole.ROLE_MERCHANT);
+        UsersRoles customer = roleService.getOrSave(ConstantRole.ROLE_CUSTOMER);
+        String hashPassword = passwordEncoder.encode(request.getPassword());
+        Users user = Users.builder()
+                .username(request.getUsername())
+                .password(hashPassword)
+                .usersRoles(List.of(merchant, customer))
+                .build();
+        userRepository.saveAndFlush(user);
+
+        MerchantRequest merchantRequest = MerchantRequest.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber())
+                .build();
+        Merchant merchant1 = merchantService.createMerchant(merchantRequest, user);
+
+        return RegisterResponse.builder()
+                .username(user.getUsername())
+                .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                .merchant(employeeResponse)
+                .build();
     }
 
     @Override
     public RegisterResponse registerCustomer(RegisterRequest request) {
-        return null;
+        validation.validate(request);
+        UsersRoles customer = roleService.getOrSave(ConstantRole.ROLE_CUSTOMER);
+        String hashPassword = passwordEncoder.encode(request.getPassword());
+        Users user = Users.builder()
+                .username(request.getUsername())
+                .password(hashPassword)
+                .usersRoles(List.of(customer))
+                .build();
+        userRepository.saveAndFlush(user);
+
+        CustomerRequest customerRequest = CustomerRequest.builder()
+                .name(request.getName())
+                .points(0)
+                .email(request.getEmail())
+                .build();
+        Customer customer1 = customerServiceImpl.createCustomer(customerRequest, user);
+
+        return RegisterResponse.builder()
+                .username(user.getUsername())
+                .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                .customer(employeeResponse)
+                .build();
     }
 }

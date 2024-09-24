@@ -2,6 +2,7 @@ package com.razahdev.MajuMundurClothing.services;
 
 import com.razahdev.MajuMundurClothing.dto.requests.ClothRequest;
 import com.razahdev.MajuMundurClothing.dto.requests.MerchantRequest;
+import com.razahdev.MajuMundurClothing.dto.responses.ClothResponse;
 import com.razahdev.MajuMundurClothing.entities.Cloth;
 import com.razahdev.MajuMundurClothing.entities.Merchant;
 
@@ -13,4 +14,10 @@ public interface ClothService {
     List<Cloth> getAll();
     Cloth getById(String id);
     void deleteById(String id);
+    Cloth getByName(String name);
+
+    ClothResponse createResponse(ClothRequest request);
+    ClothResponse updateResponse(ClothRequest request);
+    List<ClothResponse> getAllResponses();
+    ClothResponse getByIdResponses(String id);
 }

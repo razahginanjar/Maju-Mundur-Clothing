@@ -7,10 +7,9 @@ import com.razahdev.MajuMundurClothing.dto.responses.LoginResponse;
 import com.razahdev.MajuMundurClothing.dto.responses.RegisterResponse;
 
 public interface AuthService {
-    RegisterResponse register(RegisterRequest register);
     LoginResponse login(LoginRequest login);
 
-    RegisterResponse registerEmployee(RegisterRequest request);
+    RegisterResponse registerMerchant(RegisterRequest request);
 
     RegisterResponse registerCustomer(RegisterRequest request);
 }

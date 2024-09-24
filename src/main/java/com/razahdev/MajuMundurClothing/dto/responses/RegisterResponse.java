@@ -1,6 +1,5 @@
 package com.razahdev.MajuMundurClothing.dto.responses;
 
-import com.enigma.challengebookingroom.dto.response.EmployeeResponse;
 import lombok.*;
 
 import java.util.List;
@@ -13,5 +12,6 @@ import java.util.List;
 public class RegisterResponse {
     private String username;
     private List<String> roles;
-    private EmployeeResponse employee;
+    private MerchantResponse merchant;
+    private CustomerResponse customer;
 }
