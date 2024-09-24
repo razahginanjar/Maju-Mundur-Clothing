@@ -1,14 +1,15 @@
 package com.razahdev.MajuMundurClothing.controllers;
 
-import RazahDev.WarungAPI.Constant.APIUrl;
-import RazahDev.WarungAPI.DTO.GenericResponse;
-import RazahDev.WarungAPI.DTO.ResponsePaging;
-import RazahDev.WarungAPI.DTO.Transaction.GetTotalSalesResponse;
-import RazahDev.WarungAPI.DTO.Transaction.TransactionRequest;
-import RazahDev.WarungAPI.DTO.Transaction.TransactionResponse;
-import RazahDev.WarungAPI.Service.Impl.TransactionServiceImpl;
+import com.razahdev.MajuMundurClothing.constants.ApiUrl;
+import com.razahdev.MajuMundurClothing.dto.requests.CreateTransactionRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.UpdateTransactionRequest;
+import com.razahdev.MajuMundurClothing.dto.responses.CommonResponse;
+import com.razahdev.MajuMundurClothing.dto.responses.TransactionResponse;
+import com.razahdev.MajuMundurClothing.services.impl.TransactionServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -19,106 +20,99 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping(path = APIUrl.TRANSACTION_API)
+@RequestMapping(path = ApiUrl.TRANSACTION_API)
+@SecurityRequirement(name = "bearerAuth")
+@Tag(name = "Transaction")
 public class TransactionController {
 
     private final TransactionServiceImpl transactionServiceImpl;
-
+    
+    @Operation(
+            description = "create transaction",
+            summary = "create transaction"
+    )
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<GenericResponse<TransactionResponse>> create(@RequestBody TransactionRequest request)
+    public ResponseEntity<CommonResponse<TransactionResponse>> create(@RequestBody CreateTransactionRequest request)
     {
-        TransactionResponse transactionResponse = transactionServiceImpl.create(request);
+        TransactionResponse transactionResponse = transactionServiceImpl.createResponse(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                GenericResponse.<TransactionResponse>builder()
+                CommonResponse.<TransactionResponse>builder()
                         .data(transactionResponse)
-                        .status(HttpStatus.CREATED.value())
+                        .statusCode(HttpStatus.CREATED.value())
                         .message("success")
                         .build()
         );
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN')")
-    @GetMapping(
-            path = "/{id_bill}",
+    @Operation(
+            description = "Update transaction information",
+            summary = "Update transaction information"
+    )
+    @PutMapping(
+            consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<GenericResponse<TransactionResponse>> get(@PathVariable(name = "id_bill") String idBill)
+    public ResponseEntity<CommonResponse<TransactionResponse>> update(@RequestBody UpdateTransactionRequest request)
     {
-        TransactionResponse transactionResponse = transactionServiceImpl.get(idBill);
+        TransactionResponse transactionResponse = transactionServiceImpl.updateResponse(request);
         return ResponseEntity.status(HttpStatus.OK).body(
-                GenericResponse.<TransactionResponse>builder()
+                CommonResponse.<TransactionResponse>builder()
                         .data(transactionResponse)
-                        .status(HttpStatus.OK.value())
+                        .statusCode(HttpStatus.OK.value())
                         .message("success")
                         .build()
         );
     }
 
+    @Operation(
+            description = "get transaction information (ADMINISTRATOR, MERCHANT PRIVILEGE)",
+            summary = "get transaction information"
+    )
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','MERCHANT')")
     @GetMapping(
-          path = "/{id_customer}",
-          produces = MediaType.APPLICATION_JSON_VALUE
+            path = ApiUrl.PATH_VAR_ID,
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<GenericResponse<List<TransactionResponse>>> getAllTransactionByCustomer(
-            @PathVariable("id_customer")String idCustomer
-    )
+    public ResponseEntity<CommonResponse<TransactionResponse>> get(@PathVariable(name = "id") String idBill)
     {
-        List<TransactionResponse> list = transactionServiceImpl.getAllPerCustomer(idCustomer);
+        TransactionResponse transactionResponse = transactionServiceImpl.getByIdResponse(idBill);
         return ResponseEntity.status(HttpStatus.OK).body(
-                GenericResponse.<List<TransactionResponse>>builder()
+                CommonResponse.<TransactionResponse>builder()
+                        .data(transactionResponse)
+                        .statusCode(HttpStatus.OK.value())
+                        .message("success")
+                        .build()
+        );
+    }
+
+    @Operation(
+            description = "get all transaction information (ADMINISTRATOR, MERCHANT PRIVILEGE)",
+            summary = "get all transaction information"
+    )
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','MERCHANT')")
+    @GetMapping(
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<CommonResponse<List<TransactionResponse>>>getList(
+            @RequestParam(name = "cloth_name", required = false) String clothName)
+    {
+        List<TransactionResponse> list;
+        if(clothName == null)
+        {
+            list = transactionServiceImpl.getAllResponses();
+        }else{
+            list = transactionServiceImpl.getByClothResponses(clothName);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(
+                CommonResponse.<List<TransactionResponse>>builder()
                         .data(list)
-                        .status(HttpStatus.OK.value())
-                        .message("Succcess get all transaction customer")
+                        .statusCode(HttpStatus.OK.value())
+                        .message("Success get transactions")
                         .build()
         );
     }
 
-    @GetMapping(
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<GenericResponse<List<TransactionResponse>>>getList(@RequestParam(name = "size", defaultValue = "10") Integer size,
-                                                              @RequestParam(name = "page", defaultValue = "0") Integer page,
-                                                              @RequestParam(name = "receiptNumber", required = false) String receiptNumber,
-                                                              @RequestParam(name = "startDate", required = false) String startDate,
-                                                              @RequestParam(name = "endDate", required = false) String endDate,
-                                                              @RequestParam(name = "transType", required = false) String transType,
-                                                              @RequestParam(name = "productName", required = false) String productName)
-    {
-
-        Page<TransactionResponse> list = transactionServiceImpl.getList(size, page, receiptNumber, startDate, endDate, transType, productName);
-        return ResponseEntity.status(HttpStatus.OK).body(
-                GenericResponse.<List<TransactionResponse>>builder()
-                        .data(list.getContent())
-                        .status(HttpStatus.OK.value())
-                        .responsePaging(
-                                ResponsePaging.builder()
-                                        .page(list.getNumber())
-                                        .count(list.getNumberOfElements())
-                                        .size(list.getSize())
-                                        .totalPage(list.getTotalPages())
-                                        .build()
-                        )
-                        .message("Succcess get all transaction customer")
-                        .build()
-        );
-    }
-
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN')")
-    @GetMapping(
-            path = "/total-sales",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ResponseEntity<GenericResponse<GetTotalSalesResponse>> getTotalSales(@RequestParam(name = "startDate", required = false) String startDate,
-                                                                @RequestParam(name = "endDate", required = false) String endDate)
-    {
-        GetTotalSalesResponse totalSales = transactionServiceImpl.getTotalSales(startDate, endDate);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(GenericResponse.<GetTotalSalesResponse>builder()
-                        .data(totalSales)
-                        .message("success")
-                        .status(HttpStatus.OK.value())
-                        .build());
-    }
 }

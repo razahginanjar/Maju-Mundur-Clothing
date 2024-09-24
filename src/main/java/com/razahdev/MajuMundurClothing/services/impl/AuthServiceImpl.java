@@ -1,16 +1,18 @@
 package com.razahdev.MajuMundurClothing.services.impl;
 
 
-import com.razahdev.MajuMundurClothing.dto.requests.LoginRequest;
-import com.razahdev.MajuMundurClothing.dto.requests.RegisterRequest;
+import com.razahdev.MajuMundurClothing.constants.ConstantRole;
+import com.razahdev.MajuMundurClothing.dto.requests.*;
+import com.razahdev.MajuMundurClothing.dto.responses.CustomerResponse;
 import com.razahdev.MajuMundurClothing.dto.responses.LoginResponse;
+import com.razahdev.MajuMundurClothing.dto.responses.MerchantResponse;
 import com.razahdev.MajuMundurClothing.dto.responses.RegisterResponse;
+import com.razahdev.MajuMundurClothing.entities.Customer;
+import com.razahdev.MajuMundurClothing.entities.Merchant;
 import com.razahdev.MajuMundurClothing.entities.Users;
+import com.razahdev.MajuMundurClothing.entities.UsersRoles;
 import com.razahdev.MajuMundurClothing.repository.UsersRepository;
-import com.razahdev.MajuMundurClothing.repository.UsersRoleRepository;
-import com.razahdev.MajuMundurClothing.services.AuthService;
-import com.razahdev.MajuMundurClothing.services.JwtService;
-import com.razahdev.MajuMundurClothing.services.MerchantService;
+import com.razahdev.MajuMundurClothing.services.*;
 import com.razahdev.MajuMundurClothing.utils.ValidationUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
@@ -32,16 +34,18 @@ import java.util.Optional;
 public class AuthServiceImpl implements AuthService {
     private final UsersRepository userRepository;
 
-    private final UsersRoleRepository roleService;
+    private final UsersRoleService roleService;
     private final PasswordEncoder passwordEncoder;
-    private final MerchantService employeeService;
+    private final MerchantService merchantService;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final ValidationUtils validation;
+    private final RewardService rewardService;
+    private final CustomerServiceImpl customerServiceImpl;
 
-    @Value("${challengebookingroom.superadmin.username}")
+    @Value("${maju_mundur.superadmin.username}")
     private String superAdminUsername;
-    @Value("${challengebookingroom.superadmin.password}")
+    @Value("${maju_mundur.superadmin.password}")
     private String superAdminPassword;
 
     @PostConstruct
@@ -50,51 +54,18 @@ public class AuthServiceImpl implements AuthService {
         Optional<Users> userSuperAdmin = userRepository.findByUsername(superAdminUsername);
         if (userSuperAdmin.isPresent()) return;
 
-        Role admin = roleService.create(RoleRequest.builder().constantRole(ConstantRole.ROLE_ADMINISTRATOR).build());
-        Role ga = roleService.create(RoleRequest.builder().constantRole(ConstantRole.ROLE_GENERAL_AFFAIR).build());
-        Role user = roleService.create(RoleRequest.builder().constantRole(ConstantRole.ROLE_USER).build());
+        UsersRoles admin = roleService.getOrSave(ConstantRole.ROLE_ADMINISTRATOR);
+        UsersRoles merchant = roleService.getOrSave(ConstantRole.ROLE_MERCHANT);
+        UsersRoles customer = roleService.getOrSave(ConstantRole.ROLE_CUSTOMER);
 
-        User account = User.builder()
+        Users account = Users.builder()
                 .username(superAdminUsername)
                 .password(passwordEncoder.encode(superAdminPassword))
-                .roles(List.of(admin, ga, user))
+                .usersRoles(List.of(admin, merchant, customer))
                 .build();
         userRepository.save(account);
-    }
-
-    @Override
-    public RegisterResponse register(RegisterRequest request) {
-        validation.validate(request);
-        Role role = roleService.getOrSave(ConstantRole.ROLE_USER);
-        String hashPassword = passwordEncoder.encode(request.getPassword());
-
-        EmployeeRequest employee = EmployeeRequest.builder()
-                .employeeName(request.getEmployeeName())
-                .department(request.getDepartment())
-                .phoneNumber(request.getPhoneNumber())
-                .corporateEmail(request.getCorporateEmail())
-                .build();
-        Employee response = employeeService.createAndGet(employee);
-
-        EmployeeResponse employeeResponse = EmployeeResponse.builder()
-                .employeeId(response.getEmployeeId())
-                .employeeName(employee.getEmployeeName())
-                .department(employee.getDepartment())
-                .build();
-
-        User user = User.builder()
-                .username(request.getUsername())
-                .employee(response)
-                .password(hashPassword)
-                .roles(List.of(role))
-                .build();
-        userRepository.saveAndFlush(user);
-
-        return RegisterResponse.builder()
-                .username(user.getUsername())
-                .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
-                .employee(employeeResponse)
-                .build();
+        rewardService.create(CreateRewardRequest.builder().rewardName("REWARD A").points(20).build());
+        rewardService.create(CreateRewardRequest.builder().rewardName("REWARD B").points(40).build());
     }
 
     @Override
@@ -116,12 +87,54 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public RegisterResponse registerEmployee(RegisterRequest request) {
-        return null;
+    public RegisterResponse registerMerchant(RegisterRequest request) {
+        validation.validate(request);
+        UsersRoles merchant = roleService.getOrSave(ConstantRole.ROLE_MERCHANT);
+        UsersRoles customer = roleService.getOrSave(ConstantRole.ROLE_CUSTOMER);
+        String hashPassword = passwordEncoder.encode(request.getPassword());
+        Users user = Users.builder()
+                .username(request.getUsername())
+                .password(hashPassword)
+                .usersRoles(List.of(merchant, customer))
+                .build();
+        userRepository.saveAndFlush(user);
+
+        CreateMerchantRequest createMerchantRequest = CreateMerchantRequest.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .phoneNumber(request.getPhoneNumber())
+                .build();
+        MerchantResponse merchant1 = merchantService.createMerchantResponse(createMerchantRequest, user);
+
+        return RegisterResponse.builder()
+                .username(user.getUsername())
+                .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                .merchant(merchant1)
+                .build();
     }
 
     @Override
     public RegisterResponse registerCustomer(RegisterRequest request) {
-        return null;
+        validation.validate(request);
+        UsersRoles customer = roleService.getOrSave(ConstantRole.ROLE_CUSTOMER);
+        String hashPassword = passwordEncoder.encode(request.getPassword());
+        Users user = Users.builder()
+                .username(request.getUsername())
+                .password(hashPassword)
+                .usersRoles(List.of(customer))
+                .build();
+        userRepository.saveAndFlush(user);
+
+        CreateCustomerRequest createCustomerRequest = CreateCustomerRequest.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .build();
+        CustomerResponse customerResponse = customerServiceImpl.createCustomerResponse(createCustomerRequest, user);
+
+        return RegisterResponse.builder()
+                .username(user.getUsername())
+                .roles(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList())
+                .customer(customerResponse)
+                .build();
     }
 }

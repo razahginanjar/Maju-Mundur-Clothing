@@ -1,13 +1,15 @@
 package com.razahdev.MajuMundurClothing.services.impl;
 
-import com.razahdev.MajuMundurClothing.dto.requests.ClothRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.CreateClothRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.UpdateClothRequest;
+import com.razahdev.MajuMundurClothing.dto.responses.ClothResponse;
 import com.razahdev.MajuMundurClothing.entities.Cloth;
 import com.razahdev.MajuMundurClothing.entities.ClothPrice;
+import com.razahdev.MajuMundurClothing.mapper.ClothMapper;
 import com.razahdev.MajuMundurClothing.repository.ClothRepository;
 import com.razahdev.MajuMundurClothing.services.ClothPriceService;
 import com.razahdev.MajuMundurClothing.services.ClothService;
 import com.razahdev.MajuMundurClothing.utils.ValidationUtils;
-import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -22,9 +24,10 @@ public class ClothServiceImpl implements ClothService {
     private final ClothRepository clothRepository;
     private final ClothPriceService clothPriceService;
     private final ValidationUtils validationUtils;
+    private final ClothMapper clothMapper;
 
     @Override
-    public Cloth create(ClothRequest request) {
+    public Cloth create(CreateClothRequest request) {
         validationUtils.validate(request);
         ClothPrice clothPrice = clothPriceService.create(request.getPrice());
         if(clothRepository.existsByName(request.getName()))
@@ -41,7 +44,7 @@ public class ClothServiceImpl implements ClothService {
     }
 
     @Override
-    public Cloth update(ClothRequest request) {
+    public Cloth update(UpdateClothRequest request) {
         validationUtils.validate(request);
         Cloth cloth = getById(request.getId());
         ClothPrice clothPrice = clothPriceService.create(request.getPrice());
@@ -72,5 +75,44 @@ public class ClothServiceImpl implements ClothService {
     public void deleteById(String id) {
         Cloth byId = getById(id);
         clothRepository.delete(byId);
+    }
+
+    @Override
+    public Cloth getByName(String name) {
+        if(Objects.isNull(name))
+        {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, HttpStatus.BAD_REQUEST.getReasonPhrase());
+        }
+        return clothRepository.findClothByName(name).orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        HttpStatus.NOT_FOUND.getReasonPhrase())
+        );
+    }
+
+    @Override
+    public ClothResponse createResponse(CreateClothRequest request) {
+        validationUtils.validate(request);
+        Cloth cloth = create(request);
+        return clothMapper.map(cloth);
+    }
+
+    @Override
+    public ClothResponse updateResponse(UpdateClothRequest request) {
+        validationUtils.validate(request);
+        Cloth update = update(request);
+        return clothMapper.map(update);
+    }
+
+    @Override
+    public List<ClothResponse> getAllResponses() {
+        return getAll().stream().map(
+                clothMapper::map
+        ).toList();
+    }
+
+    @Override
+    public ClothResponse getByIdResponses(String id) {
+        Cloth byId = getById(id);
+        return clothMapper.map(byId);
     }
 }

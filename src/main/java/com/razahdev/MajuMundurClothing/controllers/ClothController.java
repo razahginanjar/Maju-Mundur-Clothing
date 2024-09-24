@@ -2,10 +2,15 @@ package com.razahdev.MajuMundurClothing.controllers;
 
 
 import com.razahdev.MajuMundurClothing.constants.ApiUrl;
+import com.razahdev.MajuMundurClothing.dto.requests.CreateClothRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.UpdateClothRequest;
 import com.razahdev.MajuMundurClothing.dto.responses.ClothResponse;
+import com.razahdev.MajuMundurClothing.dto.responses.CommonResponse;
 import com.razahdev.MajuMundurClothing.services.impl.ClothServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,80 +22,86 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(path = ApiUrl.PRODUCT_API)
+@Tag(name = "Cloth")
+@SecurityRequirement(name = "bearerAuth")
 public class ClothController {
 
-    private final ClothServiceImpl productServicesImpl;
-
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN')")
+    private final ClothServiceImpl clothService;
+    @Operation(
+            description = "Create new cloth (ADMIN, MERCHANT PRIVILEGE)",
+            summary = "Create new cloth"
+    )
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','MERCHANT')")
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<GenericResponse<ClothResponse>> create(@RequestBody ProductRequest request)
+    public ResponseEntity<CommonResponse<ClothResponse>> create(@RequestBody CreateClothRequest request)
     {
-        ClothResponse ClothResponse = productServicesImpl.create(request);
+        ClothResponse ClothResponse = clothService.createResponse(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(
-                GenericResponse.<ClothResponse>builder()
+                CommonResponse.<ClothResponse>builder()
                         .data(ClothResponse)
                         .message("success")
-                        .status(HttpStatus.CREATED.value())
+                        .statusCode(HttpStatus.CREATED.value())
                         .build()
         );
     }
-
+    @Operation(
+            description = "get all cloth",
+            summary = "get all cloth"
+    )
     @GetMapping(
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<GenericResponse<List<ClothResponse>>> getList()
+    public ResponseEntity<CommonResponse<List<ClothResponse>>> getList()
     {
-        Page<ClothResponse> list = productServicesImpl.getAll();
+        List<ClothResponse> list = clothService.getAllResponses();
         return ResponseEntity.status(HttpStatus.OK).body(
-                GenericResponse.<List<ClothResponse>>builder()
-                        .data(list.getContent())
-                        .responsePaging(
-                                ResponsePaging.builder()
-                                        .count(list.getNumberOfElements())
-                                        .page(list.getNumber())
-                                        .size(list.getSize())
-                                        .totalPage(list.getTotalPages())
-                                        .build()
-                        )
-                        .status(HttpStatus.OK.value())
+                CommonResponse.<List<ClothResponse>>builder()
+                        .data(list)
+                        .statusCode(HttpStatus.OK.value())
                         .message("Success")
                         .build()
         );
     }
-
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN')")
+    @Operation(
+            description = "Update cloth (ADMINISTRATOR, MERCHANT PRIVILEGE)",
+            summary = "Update cloth"
+    )
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','MERCHANT')")
     @PutMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<GenericResponse<ClothResponse>> update(@RequestBody UpdateProductRequest request)
+    public ResponseEntity<CommonResponse<ClothResponse>> update(@RequestBody UpdateClothRequest request)
     {
-        ClothResponse update = productServicesImpl.update(request);
+        ClothResponse update = clothService.updateResponse(request);
         return ResponseEntity.status(HttpStatus.OK).body(
-                GenericResponse.<ClothResponse>builder()
+                CommonResponse.<ClothResponse>builder()
                         .data(update)
                         .message("success")
-                        .status(HttpStatus.OK.value())
+                        .statusCode(HttpStatus.OK.value())
                         .build()
         );
     }
-
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN')")
+    @Operation(
+            description = "delete cloth (ADMINISTRATOR, MERCHANT PRIVILEGE)",
+            summary = "delete cloth"
+    )
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','MERCHANT')")
     @DeleteMapping(
             path = "{id_product}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<GenericResponse<String>> delete(@PathVariable(name = "id_product") String idProduct)
+    public ResponseEntity<CommonResponse<String>> delete(@PathVariable(name = "id_product") String idProduct)
     {
-        productServicesImpl.delete(idProduct);
+        clothService.deleteById(idProduct);
         return ResponseEntity.status(HttpStatus.OK).body(
-                GenericResponse.<String>builder()
+                CommonResponse.<String>builder()
                         .data("OK")
                         .message("success")
-                        .status(HttpStatus.OK.value())
+                        .statusCode(HttpStatus.OK.value())
                         .build()
         );
     }

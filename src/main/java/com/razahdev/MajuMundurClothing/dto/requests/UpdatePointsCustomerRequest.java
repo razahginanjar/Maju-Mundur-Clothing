@@ -1,5 +1,7 @@
 package com.razahdev.MajuMundurClothing.dto.requests;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Getter
@@ -7,9 +9,10 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CustomerRequest {
+public class UpdatePointsCustomerRequest {
+    @NotNull
+    @NotBlank
     private String id;
-    private String name;
+    @NotNull
     private Integer points;
-    private String email;
 }
