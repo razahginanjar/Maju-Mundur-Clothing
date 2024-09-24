@@ -10,19 +10,15 @@ import io.swagger.v3.oas.annotations.servers.Server;
 @OpenAPIDefinition
         (
                 info = @Info(
-                        description = "Documentation Booking Room API",
-                        title = "Documentation Booking Room API",
+                        description = "Documentation Maju Mundur API",
+                        title = "Documentation Maju Mundur API",
                         version = "v.1.0",
                         termsOfService = "Terms of Service"
                 ),
                 servers = {
                         @Server(
                                 description = "Local ENV",
-                                url = "http://localhost:8081"
-                        ),
-                        @Server(
-                                description = "Remote ENV",
-                                url = "remote-server"
+                                url = "http://localhost:8181"
                         )
                 }
         )

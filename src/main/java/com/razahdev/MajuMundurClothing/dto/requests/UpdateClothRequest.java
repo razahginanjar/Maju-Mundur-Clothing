@@ -16,7 +16,6 @@ public class UpdateClothRequest {
     @NotBlank
     @NotNull
     private String name;
-    @NotBlank
     @NotNull
     private Long price;
 }

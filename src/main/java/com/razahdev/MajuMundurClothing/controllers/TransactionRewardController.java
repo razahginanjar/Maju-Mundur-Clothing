@@ -6,6 +6,9 @@ import com.razahdev.MajuMundurClothing.dto.requests.UpdateTransactionRewardReque
 import com.razahdev.MajuMundurClothing.dto.responses.CommonResponse;
 import com.razahdev.MajuMundurClothing.dto.responses.TransactionRewardResponse;
 import com.razahdev.MajuMundurClothing.services.impl.TransactionRewardServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,10 +21,16 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = ApiUrl.TRANSACTION_REWARD_API)
+@SecurityRequirement(name = "bearerAuth")
+@Tag(name = "Transaction Reward")
 public class TransactionRewardController {
 
     private final TransactionRewardServiceImpl transactionRewardServiceImpl;
 
+    @Operation(
+            description = "create transaction reward",
+            summary = "create transaction reward"
+    )
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -37,7 +46,11 @@ public class TransactionRewardController {
                         .build()
         );
     }
-    
+
+    @Operation(
+            description = "update transaction reward",
+            summary = "update transaction reward"
+    )
     @PutMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -53,8 +66,12 @@ public class TransactionRewardController {
                         .build()
         );
     }
-    
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN')")
+
+    @Operation(
+            description = "get specific transaction reward (ADMINISTRATOR, MERCHANT PRIVILEGE)",
+            summary = "get specific transaction reward"
+    )
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','MERCHANT')")
     @GetMapping(
             path = ApiUrl.PATH_VAR_ID,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -71,6 +88,11 @@ public class TransactionRewardController {
         );
     }
 
+    @Operation(
+            description = "get all transaction reward (ADMINISTRATOR, MERCHANT PRIVILEGE)",
+            summary = "get all transaction reward"
+    )
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','MERCHANT')")
     @GetMapping(
             produces = MediaType.APPLICATION_JSON_VALUE
     )

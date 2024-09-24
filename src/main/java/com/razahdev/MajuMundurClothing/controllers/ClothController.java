@@ -7,6 +7,9 @@ import com.razahdev.MajuMundurClothing.dto.requests.UpdateClothRequest;
 import com.razahdev.MajuMundurClothing.dto.responses.ClothResponse;
 import com.razahdev.MajuMundurClothing.dto.responses.CommonResponse;
 import com.razahdev.MajuMundurClothing.services.impl.ClothServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -19,11 +22,16 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping(path = ApiUrl.PRODUCT_API)
+@Tag(name = "Cloth")
+@SecurityRequirement(name = "bearerAuth")
 public class ClothController {
 
     private final ClothServiceImpl clothService;
-
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN')")
+    @Operation(
+            description = "Create new cloth (ADMIN, MERCHANT PRIVILEGE)",
+            summary = "Create new cloth"
+    )
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','MERCHANT')")
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -39,7 +47,10 @@ public class ClothController {
                         .build()
         );
     }
-
+    @Operation(
+            description = "get all cloth",
+            summary = "get all cloth"
+    )
     @GetMapping(
             produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -54,8 +65,11 @@ public class ClothController {
                         .build()
         );
     }
-
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN')")
+    @Operation(
+            description = "Update cloth (ADMINISTRATOR, MERCHANT PRIVILEGE)",
+            summary = "Update cloth"
+    )
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','MERCHANT')")
     @PutMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -71,8 +85,11 @@ public class ClothController {
                         .build()
         );
     }
-
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN')")
+    @Operation(
+            description = "delete cloth (ADMINISTRATOR, MERCHANT PRIVILEGE)",
+            summary = "delete cloth"
+    )
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','MERCHANT')")
     @DeleteMapping(
             path = "{id_product}",
             produces = MediaType.APPLICATION_JSON_VALUE

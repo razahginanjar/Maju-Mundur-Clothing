@@ -6,6 +6,9 @@ import com.razahdev.MajuMundurClothing.dto.requests.UpdateTransactionRequest;
 import com.razahdev.MajuMundurClothing.dto.responses.CommonResponse;
 import com.razahdev.MajuMundurClothing.dto.responses.TransactionResponse;
 import com.razahdev.MajuMundurClothing.services.impl.TransactionServiceImpl;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -18,10 +21,16 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(path = ApiUrl.TRANSACTION_API)
+@SecurityRequirement(name = "bearerAuth")
+@Tag(name = "Transaction")
 public class TransactionController {
 
     private final TransactionServiceImpl transactionServiceImpl;
-
+    
+    @Operation(
+            description = "create transaction",
+            summary = "create transaction"
+    )
     @PostMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -38,6 +47,10 @@ public class TransactionController {
         );
     }
 
+    @Operation(
+            description = "Update transaction information",
+            summary = "Update transaction information"
+    )
     @PutMapping(
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -54,7 +67,11 @@ public class TransactionController {
         );
     }
 
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN','ADMIN')")
+    @Operation(
+            description = "get transaction information (ADMINISTRATOR, MERCHANT PRIVILEGE)",
+            summary = "get transaction information"
+    )
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','MERCHANT')")
     @GetMapping(
             path = ApiUrl.PATH_VAR_ID,
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -71,24 +88,11 @@ public class TransactionController {
         );
     }
 
-    @GetMapping(
-          path = "/cloth"+ApiUrl.PATH_VAR_ID,
-          produces = MediaType.APPLICATION_JSON_VALUE
+    @Operation(
+            description = "get all transaction information (ADMINISTRATOR, MERCHANT PRIVILEGE)",
+            summary = "get all transaction information"
     )
-    public ResponseEntity<CommonResponse<List<TransactionResponse>>> getAllTransactionByCloth(
-            @PathVariable("id")String idCloth
-    )
-    {
-        List<TransactionResponse> list = transactionServiceImpl.getByClothResponses(idCloth);
-        return ResponseEntity.status(HttpStatus.OK).body(
-                CommonResponse.<List<TransactionResponse>>builder()
-                        .data(list)
-                        .statusCode(HttpStatus.OK.value())
-                        .message("Succcess get all transaction customer")
-                        .build()
-        );
-    }
-
+    @PreAuthorize("hasAnyRole('ADMINISTRATOR','MERCHANT')")
     @GetMapping(
             produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -106,7 +110,7 @@ public class TransactionController {
                 CommonResponse.<List<TransactionResponse>>builder()
                         .data(list)
                         .statusCode(HttpStatus.OK.value())
-                        .message("Succcess get all transaction customer")
+                        .message("Success get transactions")
                         .build()
         );
     }
