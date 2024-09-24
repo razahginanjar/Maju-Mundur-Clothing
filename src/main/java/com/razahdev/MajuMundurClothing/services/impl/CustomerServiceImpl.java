@@ -1,7 +1,9 @@
 package com.razahdev.MajuMundurClothing.services.impl;
 
 import com.razahdev.MajuMundurClothing.constants.ConstantRole;
-import com.razahdev.MajuMundurClothing.dto.requests.CustomerRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.CreateCustomerRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.UpdateCustomerRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.UpdatePointsCustomerRequest;
 import com.razahdev.MajuMundurClothing.dto.responses.CustomerResponse;
 import com.razahdev.MajuMundurClothing.entities.Customer;
 import com.razahdev.MajuMundurClothing.entities.Users;
@@ -28,18 +30,18 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerMapperImpl customerMapperImpl;
 
     @Override
-    public Customer createCustomer(CustomerRequest customerRequest, Users users) {
-        validationUtils.validate(customerRequest);
+    public Customer createCustomer(CreateCustomerRequest createCustomerRequest, Users users) {
+        validationUtils.validate(createCustomerRequest);
         Customer customer = new Customer();
-        customer.setName(customerRequest.getName());
-        customer.setEmail(customerRequest.getEmail());
-        customer.setPoints(customerRequest.getPoints());
+        customer.setName(createCustomerRequest.getName());
+        customer.setEmail(createCustomerRequest.getEmail());
+        customer.setPoints(0);
         customer.setUsersCustomer(users);
         return customerRepository.saveAndFlush(customer);
     }
 
     @Override
-    public Customer update(CustomerRequest request) {
+    public Customer update(UpdateCustomerRequest request) {
         validationUtils.validate(request);
         Users byContext = userService.getByContext();
         Customer byId = getById(request.getId());
@@ -76,7 +78,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Customer updatePoints(CustomerRequest request) {
+    public Customer updatePoints(UpdatePointsCustomerRequest request) {
         validationUtils.validate(request);
         Customer byId = getById(request.getId());
         byId.setPoints(request.getPoints());
@@ -101,13 +103,13 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerResponse createCustomerResponse(CustomerRequest customerRequest, Users users) {
-        Customer customer = createCustomer(customerRequest, users);
+    public CustomerResponse createCustomerResponse(CreateCustomerRequest createCustomerRequest, Users users) {
+        Customer customer = createCustomer(createCustomerRequest, users);
         return customerMapperImpl.map(customer);
     }
 
     @Override
-    public CustomerResponse updateResponse(CustomerRequest request) {
+    public CustomerResponse updateResponse(UpdateCustomerRequest request) {
         Customer update = update(request);
         return customerMapperImpl.map(update);
     }
@@ -123,5 +125,10 @@ public class CustomerServiceImpl implements CustomerService {
         return getAll().stream().map(
                 customerMapperImpl::map
         ).toList();
+    }
+
+    @Override
+    public CustomerResponse getByUserResponse() {
+        return customerMapperImpl.map(getByUser());
     }
 }

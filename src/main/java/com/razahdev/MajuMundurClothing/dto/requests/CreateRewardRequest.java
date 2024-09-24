@@ -1,6 +1,5 @@
 package com.razahdev.MajuMundurClothing.dto.requests;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
@@ -10,11 +9,10 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class LoginRequest {
-    @NotNull
+public class CreateRewardRequest {
     @NotBlank
-    private String username;
     @NotNull
-    @NotBlank
-    private String password;
+    private String rewardName;
+    @NotNull
+    private Integer points;
 }

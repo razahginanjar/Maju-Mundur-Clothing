@@ -1,7 +1,8 @@
 package com.razahdev.MajuMundurClothing.services.impl;
 
 import com.razahdev.MajuMundurClothing.constants.ConstantRole;
-import com.razahdev.MajuMundurClothing.dto.requests.MerchantRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.CreateMerchantRequest;
+import com.razahdev.MajuMundurClothing.dto.requests.UpdateMerchantRequest;
 import com.razahdev.MajuMundurClothing.dto.responses.MerchantResponse;
 import com.razahdev.MajuMundurClothing.entities.Merchant;
 import com.razahdev.MajuMundurClothing.entities.Users;
@@ -28,7 +29,7 @@ public class MerchantServiceImpl implements MerchantService {
     private final MerchantMapperImpl merchantMapperImpl;
 
     @Override
-    public Merchant createMerchant(MerchantRequest request, Users merchantUser) {
+    public Merchant createMerchant(CreateMerchantRequest request, Users merchantUser) {
         validationUtils.validate(request);
         Merchant merchant = new Merchant();
         merchant.setMerchantName(request.getName());
@@ -39,7 +40,7 @@ public class MerchantServiceImpl implements MerchantService {
     }
 
     @Override
-    public Merchant update(MerchantRequest request) {
+    public Merchant update(UpdateMerchantRequest request) {
         validationUtils.validate(request);
         Merchant byId = getById(request.getId());
         Users byContext = userService.getByContext();
@@ -94,13 +95,13 @@ public class MerchantServiceImpl implements MerchantService {
     }
 
     @Override
-    public MerchantResponse createMerchantResponse(MerchantRequest request, Users merchantUser) {
+    public MerchantResponse createMerchantResponse(CreateMerchantRequest request, Users merchantUser) {
         Merchant merchant = createMerchant(request, merchantUser);
         return merchantMapperImpl.map(merchant);
     }
 
     @Override
-    public MerchantResponse updateResponse(MerchantRequest request) {
+    public MerchantResponse updateResponse(UpdateMerchantRequest request) {
         Merchant update = update(request);
         return merchantMapperImpl.map(update);
     }

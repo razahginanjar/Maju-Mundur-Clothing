@@ -39,7 +39,7 @@ public class AuthController {
             consumes = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<CommonResponse<?>> registerMerchant(@RequestBody RegisterRequest request) {
-        RegisterResponse register = authService.registerEmployee(request);
+        RegisterResponse register = authService.registerMerchant(request);
         CommonResponse<RegisterResponse> response = CommonResponse.<RegisterResponse>builder()
                 .statusCode(HttpStatus.CREATED.value())
                 .message(HttpStatus.CREATED.getReasonPhrase())

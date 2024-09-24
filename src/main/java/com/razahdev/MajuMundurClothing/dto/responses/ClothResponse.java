@@ -1,6 +1,5 @@
 package com.razahdev.MajuMundurClothing.dto.responses;
 
-import RazahDev.WarungAPI.DTO.Branch.BranchResponse;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
